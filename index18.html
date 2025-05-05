@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
 <!--版权说明开始
 /*
 +--------------------------------------------------------------+
- System Name : Luhui Text Content Search and Display System V20
- 系统   名称 : 鲁虺文本内容搜索展示系统  V20
+ System Name : Luhui Text Content Search and Display System V18
+ 系统   名称 : 鲁虺文本内容搜索展示系统  V18
 +--------------------------------------------------------------+
- 创建 Created  2025-5-4 / 修改 Modify 2025-5-5
+ 创建Created  2025-5-4 / 修改Modify 2025-5-5
 +--------------------------------------------------------------+
- Version : 2.0.0
+ Version : 1.8.0
 +--------------------------------------------------------------+
- 版本更新 : 在上一个版本基础上增加显示保持原始txt文档排版格式
+ 版本更新 : 在上一个版本基础上增加分类导航链接，比如txt文件夹名
+            如 category1 分类名对应 诗词歌赋 以此类推。 
 +--------------------------------------------------------------+
  Author : 鲁虺文化网  冠富研究院  冠富商务通
 +--------------------------------------------------------------+
@@ -40,6 +40,9 @@
 +--------------------------------------------------------------+
 */
 --版权说明结束-->
+
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -49,11 +52,6 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-        }
-        pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-family: inherit;
         }
     </style>
 </head>
@@ -79,7 +77,7 @@
     </div>
     <div id="article-detail" class="container mx-auto p-8 hidden">
         <h2 id="article-title" class="text-2xl font-bold mb-2"></h2>
-        <pre id="article-content" class="text-gray-700"></pre>
+        <p id="article-content" class="text-gray-700"></p>
         <div class="flex space-x-4 mt-4">
             <button id="prev-article-button" class="bg-blue-500 text-white p-2 rounded-md">上一主题</button>
             <button id="back-button" class="bg-blue-500 text-white p-2 rounded-md">返回列表</button>
@@ -102,16 +100,12 @@
         const nextArticleButton = document.getElementById('next-article-button');
         const categoryNav = document.getElementById('category-nav');
 
-        let categories = ['category1', 'category2', 'category3', 'category4', 'category5', 'category6', 'category7', 'category8'];
+        let categories = ['category1', 'category2', 'category3', 'category4'];
         const categoryNames = {
             'category1': '鲁虺软件',
-            'category2': '文化传播',
-            'category3': '兴趣研究',
-            'category4': '诗词歌赋',
-            'category5': '传媒鉴赏',
-            'category6': '商业文案',
-            'category7': '设计智造',
-            'category8': '生活常识'
+            'category2': '诗词歌赋',
+            'category3': '恩怨情仇',
+            'category4': '生活常识'
         };
         const articles = [];
         const itemsPerPage = 50;
@@ -119,43 +113,11 @@
         let searchTerm = '';
         const categoryArticleCounts = {};
         const categoryMaxCounts = {
-            'category1': 3,
-            'category2': 18,
+            'category1': 1,
+            'category2': 1584,
             'category3': 64,
-            'category4': 122,
-            'category5': 220,
-            'category6': 65,
-            'category7': 64,
-            'category8': 64
+            'category4': 122
         };
-
-        // 简单的编码检测函数
-        function detectEncoding(arrayBuffer) {
-            const uint8Array = new Uint8Array(arrayBuffer);
-            // 简单判断是否为 UTF - 8 编码
-            for (let i = 0; i < uint8Array.length; i++) {
-                if ((uint8Array[i] & 0x80) === 0) {
-                    continue;
-                } else if ((uint8Array[i] & 0xE0) === 0xC0) {
-                    if (i + 1 >= uint8Array.length) return 'gbk';
-                    if ((uint8Array[i + 1] & 0xC0) !== 0x80) return 'gbk';
-                    i++;
-                } else if ((uint8Array[i] & 0xF0) === 0xE0) {
-                    if (i + 2 >= uint8Array.length) return 'gbk';
-                    if ((uint8Array[i + 1] & 0xC0) !== 0x80 || (uint8Array[i + 2] & 0xC0) !== 0x80) return 'gbk';
-                    i += 2;
-                } else {
-                    return 'gbk';
-                }
-            }
-            return 'utf-8';
-        }
-
-        // GBK 解码函数
-        function decodeGBK(arrayBuffer) {
-            const decoder = new TextDecoder('gbk');
-            return decoder.decode(arrayBuffer);
-        }
 
         async function fetchArticles() {
             for (const category of categories) {
@@ -169,15 +131,7 @@
                     try {
                         const response = await fetch(`${category}/${i}.txt`);
                         if (response.ok) {
-                            const arrayBuffer = await response.arrayBuffer();
-                            const encoding = detectEncoding(arrayBuffer);
-                            let text;
-                            if (encoding === 'utf-8') {
-                                const decoder = new TextDecoder('utf-8');
-                                text = decoder.decode(arrayBuffer);
-                            } else {
-                                text = decodeGBK(arrayBuffer);
-                            }
+                            const text = await response.text();
                             const lines = text.split('\n');
                             const title = lines[0];
                             const content = lines.slice(1).join('\n');
