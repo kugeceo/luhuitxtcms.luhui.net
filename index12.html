@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--版权说明开始
+/*
++--------------------------------------------------------------+
+ System Name : Luhui Text Content Search and Display System V12
+ 系统   名称 : 鲁虺文本内容搜索展示系统  V12
++--------------------------------------------------------------+
+ 创建Created  2025-5-4 / 修改Modify 2025-5-5
++--------------------------------------------------------------+
+ Version : 1.2.0
++--------------------------------------------------------------+
+ 版本更新 : 在上一个版本基础上增加了功能，修复了BUG。 
++--------------------------------------------------------------+
+ Author : 鲁虺文化网  冠富研究院  冠富商务通
++--------------------------------------------------------------+
+ Powered by luhui.net 2004-01-11
++--------------------------------------------------------------+
+ QQ : 63625244 
+ Email : info@mail.luhui.net
+ 鲁虺文化网 : http://www.luhui.net
+ 冠富研究院 : http://www.guanfu.org
+ 冠富商务通 : http://www.guanfu.net.cn
++--------------------------------------------------------------+
+ Note :
+
+ 1.本软件对于非商业用户完全免费,如果要使用在商业用途
+   方面,必须取得作者的授权.
+
+ 2.你可以任意传播以及修改本程序,但不能以任何形式删除
+   本程序的版权.请记住,保留作者版权是对原创作者的尊敬.
+
+ 3.如果有问题,可以通过上面提供的方式进行解答,但作者
+   业务繁重,如果不能及时或者不解答,请谅解.
+
+ 4.作者对使用该程序导致的问题,不予以负责.
+
+ 5.本程序版权归 鲁虺文化网 所有.禁止任何侵权行为!
+
++--------------------------------------------------------------+
+*/
+--版权说明结束-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <title>文章列表</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <div class="container mx-auto p-8">
+        <h1 class="text-3xl font-bold mb-4">文章列表</h1>
+        <div class="flex space-x-2 mb-4">
+            <input type="text" id="search-input" placeholder="搜索文章标题"
+                class="border border-gray-300 p-2 rounded-md w-full">
+            <button id="search-button" class="bg-blue-500 text-white p-2 rounded-md">搜索</button>
+        </div>
+        <div id="category-stats" class="mb-4"></div>
+        <div id="article-list-container">
+            <ul id="article-list" class="grid grid-cols-2 gap-4 space-y-2">
+                <!-- 文章列表将在这里动态生成 -->
+            </ul>
+            <div id="pagination" class="flex space-x-2 mt-4"></div>
+        </div>
+    </div>
+    <div id="article-detail" class="container mx-auto p-8 hidden">
+        <h2 id="article-title" class="text-2xl font-bold mb-2"></h2>
+        <p id="article-content" class="text-gray-700"></p>
+        <div class="flex space-x-4 mt-4">
+            <button id="prev-article-button" class="bg-blue-500 text-white p-2 rounded-md">上一主题</button>
+            <button id="back-button" class="bg-blue-500 text-white p-2 rounded-md">返回列表</button>
+            <button id="next-article-button" class="bg-blue-500 text-white p-2 rounded-md">下一主题</button>
+        </div>
+    </div>
+
+    <script>
+        const articleList = document.getElementById('article-list');
+        const articleDetail = document.getElementById('article-detail');
+        const articleTitle = document.getElementById('article-title');
+        const articleContent = document.getElementById('article-content');
+        const backButton = document.getElementById('back-button');
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const pagination = document.getElementById('pagination');
+        const articleListContainer = document.getElementById('article-list-container');
+        const categoryStats = document.getElementById('category-stats');
+        const prevArticleButton = document.getElementById('prev-article-button');
+        const nextArticleButton = document.getElementById('next-article-button');
+
+        let categories = ['category1', 'category2', 'category3', 'category4'];
+        const articles = [];
+        const itemsPerPage = 50;
+        let currentPage = 1;
+        let searchTerm = '';
+        const categoryArticleCounts = {};
+        // 定义每个分类固定的文章数量
+        const categoryMaxCounts = {
+            'category1': 254,
+            'category2': 1584,
+            'category3': 64,
+            'category4': 122
+        };
+
+        async function fetchArticles() {
+            for (const category of categories) {
+                let articleCount = 0;
+                categoryArticleCounts[category] = 0;
+                const maxCount = categoryMaxCounts[category] || Infinity;
+                for (let i = 1; i <= 1000; i++) {
+                    if (articleCount >= maxCount) {
+                        break;
+                    }
+                    try {
+                        const response = await fetch(`${category}/${i}.txt`);
+                        if (response.ok) {
+                            const text = await response.text();
+                            const lines = text.split('\n');
+                            const title = lines[0];
+                            const content = lines.slice(1).join('\n');
+                            articles.push({ title, content, path: `${category}/${i}.txt`, category });
+                            categoryArticleCounts[category]++;
+                            articleCount++;
+                        }
+                    } catch (error) {
+                        // 忽略文件不存在的错误
+                    }
+                }
+            }
+            // 对文章按分类和 ID 排序
+            articles.sort((a, b) => {
+                if (a.category === b.category) {
+                    const idA = parseInt(a.path.match(/\d+/)[0]);
+                    const idB = parseInt(b.path.match(/\d+/)[0]);
+                    return idA - idB;
+                }
+                return a.category.localeCompare(b.category);
+            });
+            const urlParams = new URLSearchParams(window.location.search);
+            searchTerm = urlParams.get('q') || '';
+            currentPage = parseInt(urlParams.get('p')) || 1;
+            const articleId = urlParams.get('id');
+            const category = urlParams.get('category');
+            if (articleId && category) {
+                const article = articles.find(a => a.path.includes(articleId) && a.category === category);
+                if (article) {
+                    showArticleDetail(article);
+                }
+            } else if (category) {
+                const filteredArticles = articles.filter(article => article.category === category);
+                displayArticles(filteredArticles, currentPage);
+            } else {
+                displayCategoryStats();
+                performSearch();
+            }
+        }
+
+        function displayArticles(articleArray, page) {
+            articleList.innerHTML = '';
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const displayedArticles = articleArray.slice(startIndex, endIndex);
+            displayedArticles.forEach(article => {
+                const listItem = document.createElement('li');
+                const link = document.createElement('a');
+                const id = article.path.match(/\d+/)[0];
+                link.href = `?category=${article.category}&id=${id}`;
+                link.textContent = article.title;
+                link.addEventListener('click', () => showArticleDetail(article));
+                listItem.appendChild(link);
+                articleList.appendChild(listItem);
+            });
+            displayPagination(articleArray.length, page);
+        }
+
+        function showArticleDetail(article) {
+            articleListContainer.classList.add('hidden');
+            articleDetail.classList.remove('hidden');
+            articleTitle.textContent = article.title;
+            articleContent.textContent = article.content;
+
+            const currentIndex = articles.indexOf(article);
+            prevArticleButton.disabled = currentIndex === 0;
+            nextArticleButton.disabled = currentIndex === articles.length - 1;
+
+            prevArticleButton.addEventListener('click', () => {
+                const prevArticle = articles[currentIndex - 1];
+                const id = prevArticle.path.match(/\d+/)[0];
+                window.history.pushState({}, '', `?category=${prevArticle.category}&id=${id}`);
+                showArticleDetail(prevArticle);
+            });
+
+            nextArticleButton.addEventListener('click', () => {
+                const nextArticle = articles[currentIndex + 1];
+                const id = nextArticle.path.match(/\d+/)[0];
+                window.history.pushState({}, '', `?category=${nextArticle.category}&id=${id}`);
+                showArticleDetail(nextArticle);
+            });
+        }
+
+        backButton.addEventListener('click', () => {
+            articleListContainer.classList.remove('hidden');
+            articleDetail.classList.add('hidden');
+            const urlParams = new URLSearchParams();
+            if (searchTerm) {
+                urlParams.set('q', searchTerm);
+            }
+            urlParams.set('p', currentPage);
+            window.history.replaceState({}, '', `?${urlParams.toString()}`);
+            performSearch();
+        });
+
+        function performSearch() {
+            searchTerm = searchInput.value.toLowerCase();
+            const filteredArticles = articles.filter(article =>
+                article.title.toLowerCase().includes(searchTerm)
+            );
+            const urlParams = new URLSearchParams();
+            if (searchTerm) {
+                urlParams.set('q', searchTerm);
+            }
+            urlParams.set('p', currentPage);
+            window.history.replaceState({}, '', `?${urlParams.toString()}`);
+            displayArticles(filteredArticles, currentPage);
+        }
+
+        searchButton.addEventListener('click', performSearch);
+
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                currentPage = 1;
+                performSearch();
+            }
+        });
+
+        function displayPagination(totalItems, currentPage) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            pagination.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.classList.add('bg-blue-500', 'text-white', 'p-2', 'rounded-md');
+                if (i === currentPage) {
+                    pageButton.classList.add('bg-blue-700');
+                }
+                pageButton.addEventListener('click', () => {
+                    currentPage = i;
+                    performSearch();
+                });
+                pagination.appendChild(pageButton);
+            }
+        }
+
+        function displayCategoryStats() {
+            let totalCount = 0;
+            let statsHtml = '<p>文章分类统计：</p><ul>';
+            for (const category in categoryArticleCounts) {
+                const count = categoryArticleCounts[category];
+                totalCount += count;
+                statsHtml += `<li>${category}: ${count} 篇文章</li>`;
+            }
+            statsHtml += `<li>所有分类总计: ${totalCount} 篇文章</li></ul>`;
+            categoryStats.innerHTML = statsHtml;
+        }
+
+        fetchArticles();
+    </script>
+</body>
+
+</html>    
