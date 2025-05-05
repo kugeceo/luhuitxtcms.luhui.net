@@ -1,0 +1,48 @@
+==================================================
+Entry Name        : 宽带连接
+Phone / Host      : 
+User Name         : 
+Password          : 
+Domain            : 
+Owner             : System
+User Profile      : Administrator
+==================================================
+
+
+Windows IP Configuration
+
+        Host Name . . . . . . . . . . . . : huike
+        Primary Dns Suffix  . . . . . . . : 
+        Node Type . . . . . . . . . . . . : Unknown
+        IP Routing Enabled. . . . . . . . : No
+        WINS Proxy Enabled. . . . . . . . : No
+
+Ethernet adapter 无线网络连接:
+
+        Connection-specific DNS Suffix  . : 
+        Description . . . . . . . . . . . : Intel(R) PRO/Wireless 3945ABG Network Connection
+        Physical Address. . . . . . . . . : 00-19-D2-67-72-7E
+        Dhcp Enabled. . . . . . . . . . . : Yes
+        Autoconfiguration Enabled . . . . : Yes
+        IP Address. . . . . . . . . . . . : 192.168.1.102
+        Subnet Mask . . . . . . . . . . . : 255.255.255.0
+        Default Gateway . . . . . . . . . : 192.168.1.1
+        DHCP Server . . . . . . . . . . . : 192.168.1.1
+        DNS Servers . . . . . . . . . . . : 124.74.213.68
+                                            202.96.209.133
+        Lease Obtained. . . . . . . . . . : 2010年2月24日 7:48:26
+        Lease Expires . . . . . . . . . . : 2010年2月25日 7:48:26
+
+Ethernet adapter 本地连接:
+
+        Media State . . . . . . . . . . . : Media disconnected
+        Description . . . . . . . . . . . : Marvell Yukon 88E8038 PCI-E Fast Ethernet Controller
+        Physical Address. . . . . . . . . : 00-1B-24-08-69-3A
+ 
+ 
+* 以上信息由光盘上一个工具生成， 
+  为的是重装系统前把您的上网帐号密码、本地连接IP保存下来， 
+  以免您重装系统后因丢失帐号密码而上不了网。 
+ 
+* 为了防止上网帐号密码被他人看到，此信息您用完后应及时转移或删除。 
+                                   
