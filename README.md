@@ -1,5 +1,7 @@
 #### 鲁虺文本内容搜索展示系统（Luhui Text Content Search and Display System）
 
+## 鲁虺文本内容搜索展示系统演示![鲁虺文本内容搜索展示系统演示](https://luhuitxtcms.luhui.net/luhuitxtcms-鲁虺文本内容搜索展示系统-05-06-2025_08_36_AM.jpg)
+
 ### 一、简介
 
 鲁虺文本内容搜索展示系统（luhuitxtcms）是一个强大的文本信息处理平台，它允许用户高效地搜索和展示各类文本内容。无论是个人查找资料，还是企业进行知识管理，本系统都能发挥重要作用。该系统前端使用 HTML、CSS 和 JavaScript 构建，结合 Tailwind CSS 和 Font Awesome 打造现代美观的界面；后端使用 JavaScript 实现核心逻辑，通过异步请求获取文本内容。
