@@ -1,6 +1,7 @@
 #### 鲁虺文本内容搜索展示系统（Luhui Text Content Search and Display System）
 
 ## 鲁虺文本内容搜索展示系统演示![鲁虺文本内容搜索展示系统演示](https://luhuitxtcms.luhui.net/luhuitxtcms-鲁虺文本内容搜索展示系统-05-06-2025_08_36_AM.jpg)
+## 鲁虺文本内容搜索展示系统演示![鲁虺文本内容搜索展示系统演示](https://luhuitxtcms.luhui.net/luhuitxtcms-鲁虺文本内容搜索展示系统-05-06-2025_10_47_AM.jpg)
 
 ### 一、简介
 
