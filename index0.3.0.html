@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--版权说明开始
+/*
++--------------------------------------------------------------+
+ System Name : Luhui Text Content Search and Display System V03
+ 系统   名称 : 鲁虺文本内容搜索展示系统  V03
++--------------------------------------------------------------+
+ 创建Created  2025-5-4 / 修改Modify 2025-5-4
++--------------------------------------------------------------+
+ Version : 0.3.0
++--------------------------------------------------------------+
+ 版本更新 : 在上一个版本基础上增加了功能，修复了BUG。 
++--------------------------------------------------------------+
+ Author : 鲁虺文化网  冠富研究院  冠富商务通
++--------------------------------------------------------------+
+ Powered by luhui.net 2004-01-11
++--------------------------------------------------------------+
+ QQ : 63625244 
+ Email : info@mail.luhui.net
+ 鲁虺文化网 : http://www.luhui.net
+ 冠富研究院 : http://www.guanfu.org
+ 冠富商务通 : http://www.guanfu.net.cn
++--------------------------------------------------------------+
+ Note :
+
+ 1.本软件对于非商业用户完全免费,如果要使用在商业用途
+   方面,必须取得作者的授权.
+
+ 2.你可以任意传播以及修改本程序,但不能以任何形式删除
+   本程序的版权.请记住,保留作者版权是对原创作者的尊敬.
+
+ 3.如果有问题,可以通过上面提供的方式进行解答,但作者
+   业务繁重,如果不能及时或者不解答,请谅解.
+
+ 4.作者对使用该程序导致的问题,不予以负责.
+
+ 5.本程序版权归 鲁虺文化网 所有.禁止任何侵权行为!
+
++--------------------------------------------------------------+
+*/
+--版权说明结束-->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+<title>文章列表</title>
+<style>
+body {
+font-family: 'Inter', sans-serif;
+}
+</style>
+</head>
+
+<body class="bg-gray-100">
+<div class="container mx-auto p-8">
+<h1 class="text-3xl font-bold mb-4">文章列表</h1>
+<div class="flex space-x-2 mb-4">
+<input type="text" id="search-input" placeholder="搜索文章标题"
+class="border border-gray-300 p-2 rounded-md w-full">
+<button id="search-button" class="bg-blue-500 text-white p-2 rounded-md">搜索</button>
+</div>
+<div id="article-list-container">
+<ul id="article-list" class="grid grid-cols-2 gap-4 space-y-2">
+<!-- 文章列表将在这里动态生成 -->
+</ul>
+<div id="pagination" class="flex space-x-2 mt-4"></div>
+</div>
+</div>
+<div id="article-detail" class="container mx-auto p-8 hidden">
+<h2 id="article-title" class="text-2xl font-bold mb-2"></h2>
+<p id="article-content" class="text-gray-700"></p>
+<button id="back-button" class="bg-blue-500 text-white p-2 rounded-md mt-4">返回列表</button>
+</div>
+
+    <script>
+    const articleList = document.getElementById(&#x27;article-list&#x27;);
+    const articleDetail = document.getElementById(&#x27;article-detail&#x27;);
+    const articleTitle = document.getElementById(&#x27;article-title&#x27;);
+    const articleContent = document.getElementById(&#x27;article-content&#x27;);
+    const backButton = document.getElementById(&#x27;back-button&#x27;);
+    const searchInput = document.getElementById(&#x27;search-input&#x27;);
+    const searchButton = document.getElementById(&#x27;search-button&#x27;);
+    const pagination = document.getElementById(&#x27;pagination&#x27;);
+    const articleListContainer = document.getElementById(&#x27;article-list-container&#x27;);
+
+    // &#x5047;&#x8BBE;&#x6587;&#x7AE0;&#x5206;&#x7C7B;&#x6587;&#x4EF6;&#x5939;&#x4E3A; &#x27;category1&#x27;, &#x27;category2&#x27; &#x7B49;
+    const categories = [&#x27;category1&#x27;, &#x27;category2&#x27;];
+    const articles = [];
+    const itemsPerPage = 50;
+    let currentPage = 1;
+    let searchTerm = &#x27;&#x27;;
+
+    async function fetchArticles() {
+        for (const category of categories) {
+            for (let i = 1; i &#x3C;= 1000; i++) {
+                try {
+                    const response = await fetch(&#x60;${category}/${i}.txt&#x60;);
+                    if (response.ok) {
+                        const text = await response.text();
+                        const lines = text.split(&#x27;\n&#x27;);
+                        const title = lines[0];
+                        const content = lines.slice(1).join(&#x27;\n&#x27;);
+                        articles.push({ title, content, path: &#x60;${category}/${i}.txt&#x60; });
+                    }
+                } catch (error) {
+                    // &#x5FFD;&#x7565;&#x6587;&#x4EF6;&#x4E0D;&#x5B58;&#x5728;&#x7684;&#x9519;&#x8BEF;
+                }
+            }
+        }
+        // &#x968F;&#x673A;&#x6392;&#x5E8F;&#x6587;&#x7AE0;
+        articles.sort(() =&#x3E; Math.random() - 0.5);
+        const urlParams = new URLSearchParams(window.location.search);
+        searchTerm = urlParams.get(&#x27;q&#x27;) || &#x27;&#x27;;
+        currentPage = parseInt(urlParams.get(&#x27;p&#x27;)) || 1;
+        const articleId = urlParams.get(&#x27;id&#x27;);
+        if (articleId) {
+            const article = articles.find(a =&#x3E; a.path.includes(articleId));
+            if (article) {
+                showArticleDetail(article);
+            }
+        } else {
+            performSearch();
+        }
+    }
+
+    function displayArticles(articleArray, page) {
+        articleList.innerHTML = &#x27;&#x27;;
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const displayedArticles = articleArray.slice(startIndex, endIndex);
+        displayedArticles.forEach(article =&#x3E; {
+            const listItem = document.createElement(&#x27;li&#x27;);
+            const link = document.createElement(&#x27;a&#x27;);
+            const id = article.path.match(/\d+/)[0];
+            link.href = &#x60;?id=${id}&#x60;;
+            link.textContent = article.title;
+            link.addEventListener(&#x27;click&#x27;, () =&#x3E; showArticleDetail(article));
+            listItem.appendChild(link);
+            articleList.appendChild(listItem);
+        });
+        displayPagination(articleArray.length, page);
+    }
+
+    function showArticleDetail(article) {
+        articleListContainer.classList.add(&#x27;hidden&#x27;);
+        articleDetail.classList.remove(&#x27;hidden&#x27;);
+        articleTitle.textContent = article.title;
+        articleContent.textContent = article.content;
+    }
+
+    backButton.addEventListener(&#x27;click&#x27;, () =&#x3E; {
+        articleListContainer.classList.remove(&#x27;hidden&#x27;);
+        articleDetail.classList.add(&#x27;hidden&#x27;);
+        window.history.replaceState({}, &#x27;&#x27;, &#x60;?q=${searchTerm}&#x26;p=${currentPage}&#x60;);
+        performSearch();
+    });
+
+    function performSearch() {
+        searchTerm = searchInput.value.toLowerCase();
+        const filteredArticles = articles.filter(article =&#x3E;
+            article.title.toLowerCase().includes(searchTerm)
+        );
+        const urlParams = new URLSearchParams();
+        if (searchTerm) {
+            urlParams.set(&#x27;q&#x27;, searchTerm);
+        }
+        urlParams.set(&#x27;p&#x27;, currentPage);
+        window.history.replaceState({}, &#x27;&#x27;, &#x60;?${urlParams.toString()}&#x60;);
+        displayArticles(filteredArticles, currentPage);
+    }
+
+    searchButton.addEventListener(&#x27;click&#x27;, performSearch);
+
+    searchInput.addEventListener(&#x27;keydown&#x27;, (event) =&#x3E; {
+        if (event.key === &#x27;Enter&#x27;) {
+            currentPage = 1;
+            performSearch();
+        }
+    });
+
+    function displayPagination(totalItems, currentPage) {
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        pagination.innerHTML = &#x27;&#x27;;
+        for (let i = 1; i &#x3C;= totalPages; i++) {
+            const pageButton = document.createElement(&#x27;button&#x27;);
+            pageButton.textContent = i;
+            pageButton.classList.add(&#x27;bg-blue-500&#x27;, &#x27;text-white&#x27;, &#x27;p-2&#x27;, &#x27;rounded-md&#x27;);
+            if (i === currentPage) {
+                pageButton.classList.add(&#x27;bg-blue-700&#x27;);
+            }
+            pageButton.addEventListener(&#x27;click&#x27;, () =&#x3E; {
+                currentPage = i;
+                performSearch();
+            });
+            pagination.appendChild(pageButton);
+        }
+    }
+
+    fetchArticles();
+    </script>
+</body>
+
+</html>
